@@ -1,7 +1,7 @@
 /*10627252 徐綺柔 10626305 魏子翔                        */
-/*@line 29 : main()                                     */
-/*@line 153: ffLegality "it judges the fomula ligality" */
-/*@line 330: getPostfix "transform infix to postfix   " */
+/*@line 28 : main()                                     */
+/*@line 155: ffLegality "it judges the fomula ligality" */
+/*@line 381: getPostfix "transform infix to postfix   " */
 
 #include <iostream>
 #include <string>
