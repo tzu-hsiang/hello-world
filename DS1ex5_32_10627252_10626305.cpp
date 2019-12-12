@@ -75,19 +75,27 @@ bool DataInput (int choice, char filename[])
         return false ;
     }
 
-    for ( int i = 1; i <= 3 ; i++ ) // 跳過前3行
-        fscanf(ifptr, "%*[^\n]") ;
 
     int gotline = 0 ;
-    char goal ;
+    char *goal = new char[TMPSIZE] ;
 
     while (!feof(ifptr)) // 計算行數
     {
-	goal = fgetc(ifptr) ;
-	if (goal == '\n')
+        fgets(goal, 200, ifptr) ;
         gotline++ ;
     }
-    gotline -= 2 ;
+    gotline -= 3 ;
+
+    for( int i = 0; i <= TMPSIZE; i++)
+    {
+        char *find = strchr(goal, '\n') ;
+        if (find)
+        {
+            gotline-- ;
+            break ;
+        }
+    }
+    delete [] goal ;
 
     cout << "Input file:\n\n" << "line:" << gotline << "\n\n" ;
 
