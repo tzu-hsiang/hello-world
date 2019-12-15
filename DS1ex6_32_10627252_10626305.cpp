@@ -219,8 +219,8 @@ bool DataInput (int choice, char filename[])
 
     cout << endl
          << "************************************************************" << "\n"
-         << "*  [1]. Search greather or equal to key in value.          *" << "\n"
-         << "*  [2]. Search scahho name.                                *" << "\n"
+         << "*  [1]. Search greater or equal to key in value.           *" << "\n"
+         << "*  [2]. Search school name.                                *" << "\n"
          << "*[Any]. Quit search                                        *" << "\n"
          << "************************************************************" << "\n"
          << "Choose a mode:" ;
@@ -254,8 +254,8 @@ bool DataInput (int choice, char filename[])
 
         cout << endl
              << "************************************************************" << "\n"
-             << "*  [1]. Search greather or equal to key in value.          *" << "\n"
-             << "*  [2]. Search scahho name.                                *" << "\n"
+             << "*  [1]. Search greater or equal to key in value.           *" << "\n"
+             << "*  [2]. Search school name.                                *" << "\n"
              << "*[Any]. Quit search                                        *" << "\n"
              << "************************************************************" << "\n"
              << "Choose a mode:" ;
@@ -393,6 +393,7 @@ void inorderGra(node *root, int value, int &count)
     node *findPtr = root ;
     if (findPtr != NULL)
     {
+
         inorderGra(findPtr->right, value, count ) ;
 
         if (findPtr->keyNum >= value)
@@ -408,7 +409,8 @@ void inorderGra(node *root, int value, int &count)
                  << findPtr->adata->graStu << endl ;
         }
 
-        inorderGra(findPtr->left, value, count ) ;
+        if (findPtr->keyNum >= value)
+            inorderGra(findPtr->left, value, count ) ;
 
     }
 
