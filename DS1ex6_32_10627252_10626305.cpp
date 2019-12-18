@@ -1,4 +1,4 @@
-// 10626305 魏子翔 10627252徐綺柔
+// 10626305 魏子翔 
 #include<iostream>
 #include<cstdio>
 #include<string>
@@ -40,7 +40,7 @@ void insertNode(int keyValue, Data *DataPtr, node *currentPtr, node *rootPtr, in
 node *createTreeItm(Data *dataPointer, int dataSize) ;
 int height(node* anode) ;
 void inorderGra(node *root, int value, int &count) ;
-void inorderItm(node *root, string schoolNm, int &count) ;
+void inorderItm(node *root, string schoolNm, int &count, string memo, bool found) ;
 
 int main()
 {
@@ -125,24 +125,6 @@ bool DataInput (int choice, char filename[])
     int tabNum = 0 ;
     int j ;
 
-    int i = 1 ;
-    int mid = (gotline) / 2 + 1 ;
-
-    /// 以下設定編號
-    (dataPtr+0)->itemNum = mid ;
-    (dataPtr+1)->itemNum = mid + mid/3 ;
-    (dataPtr+2)->itemNum = mid/3 ;
-    for ( j = 3; j < gotline; j++)
-    {
-
-        if (i == (mid + mid/3) || i == mid || i == (mid/3))
-            i++ ;
-
-        (dataPtr+j)->itemNum = i ;
-        i++ ;
-    }
-    /// end
-
     for ( int i = 0 ; i < gotline ; i++)
     {
         while ((garbage = fgetc(ifptr)) != '\t')
@@ -206,6 +188,43 @@ bool DataInput (int choice, char filename[])
     delete [] tmp ;
     fclose(ifptr) ;
 
+    /// 以下設定編號
+    int i = 1 ;
+    int mid = (gotline) / 2 + 1 ;
+
+    (dataPtr+0)->itemNum = mid ;
+    (dataPtr+1)->itemNum = mid + mid/3 ;
+    (dataPtr+2)->itemNum = mid/3 ;
+    for ( j = 3; j < gotline; j++)
+    {
+        if ((dataPtr+j)->schoolName == (dataPtr+j-1)->schoolName)
+        {
+            (dataPtr+j)->itemNum = (dataPtr+j-1)->itemNum ;
+        }
+        else if ((dataPtr+j)->schoolName == (dataPtr+0)->schoolName)
+        {
+            (dataPtr+j)->itemNum = (dataPtr+0)->itemNum ;
+        }
+        else if ((dataPtr+j)->schoolName == (dataPtr+1)->schoolName)
+        {
+            (dataPtr+j)->itemNum = (dataPtr+1)->itemNum ;
+        }
+        else if ((dataPtr+j)->schoolName == (dataPtr+2)->schoolName)
+        {
+            (dataPtr+j)->itemNum = (dataPtr+2)->itemNum ;
+        }
+        else
+        {
+            if (i == (mid + mid/3) || i == mid || i == (mid/3))
+            i++ ;
+
+            (dataPtr+j)->itemNum = i ;
+            i++ ;
+        }
+
+    }
+    /// end
+
     node *treeRootGra ;
     treeRootGra = createTreeGra(dataPtr, gotline) ;
 
@@ -221,12 +240,12 @@ bool DataInput (int choice, char filename[])
          << "************************************************************" << "\n"
          << "*  [1]. Search greater or equal to key in value.           *" << "\n"
          << "*  [2]. Search school name.                                *" << "\n"
-         << "*[Any]. Quit search                                        *" << "\n"
+         << "*  [0]. Quit search                                        *" << "\n"
          << "************************************************************" << "\n"
          << "Choose a mode:" ;
     cin >> mode ;
 
-    while (mode == 1 || mode == 2)
+    while (1)
     {
         if (mode == 1)
         {
@@ -245,21 +264,43 @@ bool DataInput (int choice, char filename[])
             cin >> schName ;
             cout << "Search result:\n" ;
             cout << "      學校名稱\t\t\t科系名稱          日間/進修別   等級別  學生數  教師數  上學年度畢業生人數" << endl ;
-            inorderItm(treeRootGra, schName, count) ;
+
+            bool found = false ;
+            string memo ;
+            inorderItm(treeRootGra, schName, count, memo, found) ;
 
             count = 0 ;
         }
 
+        if (mode == 0)
+            break ;
+
+        if (mode == 1 || mode == 2)
+        {
+            cout << endl
+                 << "************************************************************" << "\n"
+                 << "*  [1]. Search greater or equal to key in value.           *" << "\n"
+                 << "*  [2]. Search school name.                                *" << "\n"
+                 << "*  [0]. Quit search                                        *" << "\n"
+                 << "************************************************************" << "\n"
+                 << "Choose a mode:" ;
+            cin >> mode ;
+        }
+
+        while (mode != 1 && mode != 2 && mode != 0)
+        {
+            cout << "please enter a correct selection." ;
+            cout << endl
+                 << "************************************************************" << "\n"
+                 << "*  [1]. Search greater or equal to key in value.           *" << "\n"
+                 << "*  [2]. Search school name.                                *" << "\n"
+                 << "*  [0]. Quit search                                        *" << "\n"
+                 << "************************************************************" << "\n"
+                 << "Choose a mode:" ;
+            cin >> mode ;
+        }
 
 
-        cout << endl
-             << "************************************************************" << "\n"
-             << "*  [1]. Search greater or equal to key in value.           *" << "\n"
-             << "*  [2]. Search school name.                                *" << "\n"
-             << "*[Any]. Quit search                                        *" << "\n"
-             << "************************************************************" << "\n"
-             << "Choose a mode:" ;
-        cin >> mode ;
     }
 
 
@@ -324,24 +365,7 @@ void insertNode(int keyValue, Data *DataPtr, node *currentPtr, node *rootPtr, in
 
     while (1)
     {
-        if (currentPtr->keyNum == keyValue && currentPtr->right == NULL) // 當前位置找到一樣的值 且不存在右子樹
-        {
-            currentPtr->right = newNode ; // 當前節點的右子節點即為該值正確位置
-            newNode->keyNum = keyValue ;
-            newNode->adata = DataPtr ;
-
-            break ;
-        }
-        else if (currentPtr->keyNum == keyValue && currentPtr->right != NULL) // 當前位置找到一樣的值 且存在右子樹
-        {
-            newNode->right = currentPtr->right ;
-            newNode->keyNum = keyValue ;
-            newNode->adata = DataPtr ;
-            currentPtr->right = newNode ;
-
-            break ;
-        }
-        else if (keyValue < currentPtr->keyNum && currentPtr->left == NULL ) // 輸入值比當前指標鍵值小 且不存在左子樹
+        if (keyValue < currentPtr->keyNum && currentPtr->left == NULL ) // 輸入值比當前指標鍵值小 且不存在左子樹
         {
             currentPtr->left = newNode ; // 當前節點的左子節點即為該值正確位置
             newNode->keyNum = keyValue ;
@@ -353,7 +377,7 @@ void insertNode(int keyValue, Data *DataPtr, node *currentPtr, node *rootPtr, in
         {
             currentPtr = currentPtr->left ; // 繼續往左子樹找空節點
         }
-        else if (keyValue > currentPtr->keyNum && currentPtr->right == NULL) // 輸入值比當前指標鍵值大 且不存在右子樹
+        else if (keyValue >= currentPtr->keyNum && currentPtr->right == NULL) // 輸入值>=當前指標鍵值 且不存在右子樹
         {
             currentPtr->right = newNode ; // 當前節點的右子節點即為該值正確位置
             newNode->keyNum = keyValue ;
@@ -361,7 +385,7 @@ void insertNode(int keyValue, Data *DataPtr, node *currentPtr, node *rootPtr, in
 
             break ;
         }
-        else if (keyValue > currentPtr->keyNum && currentPtr->right != NULL) // 輸入值比當前指標鍵值大 且存在右子樹
+        else if (keyValue >= currentPtr->keyNum && currentPtr->right != NULL) // 輸入值>=當前指標鍵值大 且存在右子樹
         {
             currentPtr = currentPtr->right ; // 繼續往右子樹找空節點
         }
@@ -369,8 +393,6 @@ void insertNode(int keyValue, Data *DataPtr, node *currentPtr, node *rootPtr, in
 
     treeHigh = height(rootPtr) ;
 }
-
-
 
 int height(node* anode)
 {
@@ -416,15 +438,18 @@ void inorderGra(node *root, int value, int &count)
 
 }
 
-void inorderItm(node *root, string schoolNm, int &count)
+void inorderItm(node *root, string schoolNm, int &count, string memo, bool found)
 {
     node *findPtr = root ;
+
     if (findPtr != NULL)
     {
-        inorderItm(findPtr->right, schoolNm, count ) ;
+        inorderItm(findPtr->right, schoolNm, count, memo, found ) ;
 
         if (findPtr->adata->schoolName == schoolNm)
         {
+            memo = findPtr->adata->schoolName ;
+            found = true ;
             count++ ;
             cout << "[" << std::left << setw(3) << count << "] "
                  << std::left << setw(20) << findPtr->adata->schoolName << "\t" // 印出7個項目
@@ -436,15 +461,10 @@ void inorderItm(node *root, string schoolNm, int &count)
                  << findPtr->adata->graStu << endl ;
 
         }
-
-        inorderItm(findPtr->left, schoolNm, count ) ;
+        if (!found || memo == findPtr->adata->schoolName) ;
+            inorderItm(findPtr->left, schoolNm, count, memo, found ) ;
 
     }
 }
-
-
-
-
-
 
 
