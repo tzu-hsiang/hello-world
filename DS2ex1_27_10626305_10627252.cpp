@@ -128,7 +128,7 @@ void ModeChoose(int mode)
         }
     }
 
-
+    delete [] dataPtr ;
 }
 
 Data *SaveData (char choice[], char filename[], int &dataNum)
