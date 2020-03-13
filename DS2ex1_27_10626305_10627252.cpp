@@ -87,7 +87,7 @@ void ModeChoose(int mode)
         if (dataPtr == NULL)
         {
             cout << "Please enter correct number(ex: 100, 101, xxx)\n" ;
-
+            delete [] dataPtr ;
         }
         else
         {
@@ -96,7 +96,7 @@ void ModeChoose(int mode)
             minHeap = minHeap->CreateMinHeap(dataPtr, dataNum, buttom, leftmost) ;
             PrintHeap(mode, minHeap, buttom, leftmost) ;
             delete [] minHeap ;
-
+            delete [] dataPtr ;
         }
 
     }
@@ -115,7 +115,7 @@ void ModeChoose(int mode)
         if (dataPtr == NULL)
         {
             cout << "Please enter correct number(ex: 100, 101, xxx)\n" ;
-
+            delete [] dataPtr ;
         }
         else
         {
@@ -124,11 +124,11 @@ void ModeChoose(int mode)
             minMaxHeap = minMaxHeap->CreateMinMaxHeap(dataPtr, dataNum, buttom, leftmost) ;
             PrintHeap(mode, minMaxHeap, buttom, leftmost) ;
             delete [] minMaxHeap ;
-
+            delete [] dataPtr ;
         }
     }
 
-    delete [] dataPtr ;
+
 }
 
 Data *SaveData (char choice[], char filename[], int &dataNum)
