@@ -79,7 +79,7 @@ int twoThreeHeight(nodeType *aNode) ;
 void judgeSwapRoot23tree(nodeType *root) ;
 void print23TreeRoot(nodeType *root) ;
 
-void avlFree(avlTNode *cur) ;
+void avlFree(avlTNode *&cur) ;
 avlTNode* insert(Data *newData, avlTNode *&cur) ;
 avlTNode* RightRotate(avlTNode *&root) ;
 avlTNode* LeftRotate(avlTNode *&root) ;
@@ -924,7 +924,7 @@ void printAvlTreeRoot(avlTNode *root)
     }
 }
 
-void avlFree(avlTNode *cur)
+void avlFree(avlTNode *&cur)
 {
     if (cur == NULL)
         return ;
