@@ -382,7 +382,7 @@ void SearchDown(nodeType *cur, string newKey, stack<pointType> &aPath)
             return ;
         }
 
-        if (i > 10)
+        if (i > 100)
         {
             cout << "error!!! Infinite loop\n" ;
             system("PAUSE") ;
@@ -501,7 +501,6 @@ void SplitNonLeaf(blockType &aBlock, pointType aNonLeaf, int &count)
     // 以及 往上track的節點(curP)
     slotType buffer[3] ;
     nodeType *ptr[4] ;
-    int index = 0 ;
 
     if ((aBlock.slot.key).compare(aNonLeaf.pNode->data[0].key) < 0)
     {
