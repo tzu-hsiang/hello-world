@@ -1,5 +1,3 @@
-// 請助教下載GitHub版本評分
-// 10626305 魏子翔 10627252 徐綺柔
 #include<iostream>
 #include<cstdio>
 #include<windows.h>
