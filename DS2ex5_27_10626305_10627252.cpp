@@ -605,7 +605,7 @@ private:
 
         if (startPt == -1)
         {
-            cout << "###The id not exist in graph, please enter a new id in this graph!###\n" ;
+            cout << "###The id does not exist in graph, please enter a new id in this graph!###\n" ;
         }
 
         return startPt ;
