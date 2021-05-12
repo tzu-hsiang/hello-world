@@ -64,6 +64,16 @@ class Scheduling:
         
     # end __fetch_jobs()
     
+    def __calculate_pid_timeinfo(self, cur_time, specified_pos):
+        t_pid = self.__ready_queue[specified_pos].origin_pid
+                
+        # finish - arrival 
+        t_turnaround_time = (cur_time + 1) - self.__ready_queue[specified_pos].arrival_time
+        t_waiting_time = t_turnaround_time - self.__ready_queue[specified_pos].origin_burst_time
+        one_record = PidsTimeInfo(t_pid, t_waiting_time, t_turnaround_time)
+        return one_record
+    # end __calculate_pid_timeinfo()
+    
     def __fcfs(self):
         time_info_list = []    
         cur_time = 0
@@ -78,12 +88,7 @@ class Scheduling:
                 self.__ready_queue[FRONT].burst_time -= 1
                 
                 if self.__ready_queue[FRONT].burst_time == 0: # process is terminated
-                    t_pid = self.__ready_queue[FRONT].origin_pid
-                    
-                    # finish - arrival 
-                    t_turnaround_time = (cur_time + 1) - self.__ready_queue[FRONT].arrival_time
-                    t_waiting_time = t_turnaround_time - self.__ready_queue[FRONT].origin_burst_time
-                    one_record = PidsTimeInfo(t_pid, t_waiting_time, t_turnaround_time)
+                    one_record = self.__calculate_pid_timeinfo(cur_time, FRONT)
                     time_info_list.append(one_record)
                     
                     del(self.__ready_queue[FRONT]) # delete terminated process
@@ -129,12 +134,7 @@ class Scheduling:
                 cur_time_slice -= 1
                 
                 if self.__ready_queue[FRONT].burst_time == 0: # process is terminated
-                    t_pid = self.__ready_queue[FRONT].origin_pid
-                
-                    # finish - arrival 
-                    t_turnaround_time = (cur_time + 1) - self.__ready_queue[FRONT].arrival_time
-                    t_waiting_time = t_turnaround_time - self.__ready_queue[FRONT].origin_burst_time
-                    one_record = PidsTimeInfo(t_pid, t_waiting_time, t_turnaround_time)
+                    one_record = self.__calculate_pid_timeinfo(cur_time, FRONT)
                     time_info_list.append(one_record)
                     
                     del(self.__ready_queue[FRONT]) # delete terminated process
@@ -233,12 +233,7 @@ class Scheduling:
                         self.__ready_queue[idx].burst_time -= 1
                         
                         if self.__ready_queue[idx].burst_time == 0: # process is terminated
-                            t_pid = self.__ready_queue[idx].origin_pid
-                
-                            # finish - arrival 
-                            t_turnaround_time = (cur_time + 1) - self.__ready_queue[idx].arrival_time
-                            t_waiting_time = t_turnaround_time - self.__ready_queue[idx].origin_burst_time
-                            one_record = PidsTimeInfo(t_pid, t_waiting_time, t_turnaround_time)
+                            one_record = self.__calculate_pid_timeinfo(cur_time, idx)
                             time_info_list.append(one_record)
                             del(self.__ready_queue[idx]) # delete terminated process
                             
@@ -273,6 +268,7 @@ class Scheduling:
         return results
     
     def __pprr(self):
+        time_info_list = []
         cur_time = 0
         time_slice = self.__time_slice # assign complete time slice for first rr process
         rr_buf = []
@@ -335,7 +331,10 @@ class Scheduling:
                         self.__ready_queue[idx].burst_time -= 1
                         time_slice -= 1
                         
-                        if self.__ready_queue[idx].burst_time == 0: # process is terminated    
+                        if self.__ready_queue[idx].burst_time == 0: # process is terminated
+                            one_record = self.__calculate_pid_timeinfo(cur_time, idx)
+                            time_info_list.append(one_record)
+                            
                             del(self.__ready_queue[idx]) # delete terminated process
                             proc_complete_flag = True
                             
@@ -388,6 +387,8 @@ class Scheduling:
             cur_time += 1
             
         # while
+        result_log = ResultLog('PPRR', self.__exec_log, time_info_list)
+        output_log.append(result_log)
     # end __pprr()
     
     def __HRRN_find_next_exec_pid(self):
@@ -484,12 +485,7 @@ class Scheduling:
                         self.__ready_queue[idx].burst_time -= 1
                         
                         if self.__ready_queue[idx].burst_time == 0: # process is terminated
-                            t_pid = self.__ready_queue[idx].origin_pid
-                        
-                            # finish - arrival 
-                            t_turnaround_time = (cur_time + 1) - self.__ready_queue[idx].arrival_time
-                            t_waiting_time = self.__ready_queue[idx].waiting_time
-                            one_record = PidsTimeInfo(t_pid, t_waiting_time, t_turnaround_time)
+                            one_record = self.__calculate_pid_timeinfo(cur_time, idx)
                             time_info_list.append(one_record)
                             
                             del(self.__ready_queue[idx]) # delete terminated process
@@ -620,95 +616,101 @@ def readfile():
                                 else: # first line (len == 2)
                                     mode = int(line_tmp[0])
                                     time_slice = int(line_tmp[1])
-                                        
+                        # end if
+                    # end if                
                 break
-                
+            # end for
         except:
             if input_name == 'q' or input_name == 'Q':
-                return 0, 0, None
+                return 0, 0, None, ''
             else:
                 print('the file doesn\'t exist')
                 input_name = input('input the file name([q]quit):')
                         
     
-    return mode, time_slice, input_list
+    return mode, time_slice, input_list, input_name
 
 # end readfile()
 
-def writefile(scheduling_type):
-    print(scheduling_type)
+def writefile(scheduling_type, in_file_name):
+    out_file_name = 'out_' + in_file_name
 
-    # execution log
-    for onelog in output_log:
-                
-        print('==' + '%12s' %(onelog.scheduling_type) + '==')
-        print(onelog.exec_log)
-    # end for
-    print('===========================================================\n')
-            
-    # sort time info records by pid
-    for onelog in output_log:
-        onelog.time_info_log.sort(key = attrgetter('pid')) # sort by pid
-            
-    # waiting time header
-    print('waiting')
-    print('ID', end = '\t')
-    for idx in range(len(output_log)):
-        if idx != len(output_log) - 1:
-            print(output_log[idx].scheduling_type, end = '\t')
-        else:
-            print(output_log[idx].scheduling_type)
-                    
-    # end for
-    print('===========================================================')
-            
-    # waiting time log
-    for pid_idx in range(len(output_log[0].time_info_log)):
-        print('%-3s' % output_log[idx].time_info_log[pid_idx].pid, end = '\t')
-            
-        for idx in range(len(output_log)):
-                
-            if idx != len(output_log) - 1:
-                print('%-3s' % output_log[idx].time_info_log[pid_idx].waiting_time, end = '\t')
-            else:
-                print('%-3s' % output_log[idx].time_info_log[pid_idx].waiting_time)
-                
-                        
-        # end for
-    # end for
-    print('===========================================================\n')
-            
-    # turnaround time header
-    print('Turnaround Time')
-    print('ID', end = '\t')
-    for idx in range(len(output_log)):
-        if idx != len(output_log) - 1:
-            print(output_log[idx].scheduling_type, end = '\t')
-        else:
-            print(output_log[idx].scheduling_type)
-    # end for
-    print('===========================================================')
+    with open(out_file_name, 'w') as f:
+        f.write(scheduling_type + '\n')
     
-    # turnaround time log
-    for pid_idx in range(len(output_log[0].time_info_log)):
-        print('%-3s' % output_log[idx].time_info_log[pid_idx].pid, end = '\t')
-            
+        # execution log
+        for onelog in output_log:
+                    
+            f.write('==' + '%12s' %(onelog.scheduling_type) + '==' + '\n')
+            f.write(onelog.exec_log + '\n')
+        # end for
+        f.write('===========================================================\n\n')
+        
+        # sort time info records by pid
+        for onelog in output_log:
+            onelog.time_info_log.sort(key = attrgetter('pid')) # sort by pid
+                
+        # waiting time header
+        f.write('waiting' + '\n')
+        f.write('ID' + '\t')
         for idx in range(len(output_log)):
-                
             if idx != len(output_log) - 1:
-                print('%-3s' % output_log[idx].time_info_log[pid_idx].turnaround_time, end = '\t')
+                f.write(output_log[idx].scheduling_type + '\t')
             else:
-                print('%-3s' % output_log[idx].time_info_log[pid_idx].turnaround_time)
-                
+                f.write(output_log[idx].scheduling_type + '\n')
                         
         # end for
-    # end for
-    print('===========================================================\n\n')
+        f.write('===========================================================\n')
+                
+        # waiting time log
+        for pid_idx in range(len(output_log[0].time_info_log)):
+            f.write('%-3s' % output_log[idx].time_info_log[pid_idx].pid + '\t')
+                
+            for idx in range(len(output_log)):
+                    
+                if idx != len(output_log) - 1:
+                    f.write('%-s' % output_log[idx].time_info_log[pid_idx].waiting_time + '\t')
+                else:
+                    f.write('%-s' % output_log[idx].time_info_log[pid_idx].waiting_time + '\n')
+                    
+                            
+            # end for
+        # end for
+        f.write('===========================================================\n\n')
+                
+        # turnaround time header
+        f.write('Turnaround Time' + '\n')
+        f.write('ID' + '\t')
+        for idx in range(len(output_log)):
+            if idx != len(output_log) - 1:
+                f.write(output_log[idx].scheduling_type + '\t')
+            else:
+                f.write(output_log[idx].scheduling_type + '\n')
+        # end for
+        f.write('===========================================================\n')
+        
+        # turnaround time log
+        for pid_idx in range(len(output_log[0].time_info_log)):
+            f.write('%-3s' % output_log[idx].time_info_log[pid_idx].pid + '\t')
+                
+            for idx in range(len(output_log)):
+                    
+                if idx != len(output_log) - 1:
+                    f.write('%-s' % output_log[idx].time_info_log[pid_idx].turnaround_time + '\t')
+                else:
+                    f.write('%-s' % output_log[idx].time_info_log[pid_idx].turnaround_time + '\n')
+                    
+                            
+            # end for
+        # end for
+        f.write('===========================================================\n\n')
+        
+    # end with open
     
 # end writefile()
 
 def prog_exec():
-    mode, time_slice, input_list = readfile()
+    mode, time_slice, input_list, in_file_name = readfile()
     
     while mode != 0:
         scheduling_type = ''
@@ -717,48 +719,57 @@ def prog_exec():
             scheduling_type = 'FCFS'
             sorted_list = sorted(input_list, key = attrgetter('simplified_pid')) # sort list by simplified_pid
             scheduling = Scheduling(time_slice, sorted_list)
+            scheduling.FCFS()
+            del scheduling
+            
         
         elif mode == 2: # RR
             scheduling_type = 'RR'
             sorted_list = sorted(input_list, key = attrgetter('simplified_pid')) # sort list by simplified_pid
             scheduling = Scheduling(time_slice, sorted_list)
+            scheduling.RR()
+            del scheduling
         
         elif mode == 3: # SRTF
             scheduling_type = 'SRTF'
             sorted_list = sorted(input_list, key = attrgetter('simplified_pid')) # sort list by simplified_pid
             scheduling = Scheduling(time_slice, sorted_list)
+            scheduling.SRTF()
+            del scheduling
         
         elif mode == 4: # PPRR
             scheduling_type = 'PPRR'
             sorted_list = sorted(input_list, key = attrgetter('priority')) # sort list by priority
             scheduling = Scheduling(time_slice, sorted_list)
+            scheduling.PPRR()
+            del scheduling
         
         elif mode == 5: # HRNN
             scheduling_type = 'HRNN'
             sorted_list = sorted(input_list, key = attrgetter('simplified_pid')) # sort list by simplified_pid
             scheduling = Scheduling(time_slice, sorted_list)
+            scheduling.HRNN()
+            del scheduling
         
         elif mode == 6: # ALL
             scheduling_type = 'All'
+            
             sorted_list = sorted(input_list, key = attrgetter('simplified_pid')) # sort list by simplified_pid
             scheduling = Scheduling(time_slice, copy.deepcopy(sorted_list))
-            
             scheduling.FCFS()
             
             scheduling.__init__(time_slice, copy.deepcopy(sorted_list))
             scheduling.RR()
             
             scheduling.__init__(time_slice, copy.deepcopy(sorted_list))
-
             scheduling.SRTF()
-            '''
+            
             sorted_list = sorted(input_list, key = attrgetter('priority')) # sort list by priority
             scheduling.__init__(time_slice, copy.deepcopy(sorted_list))
             scheduling.PPRR()
-            '''
+            
             scheduling.__init__(time_slice, copy.deepcopy(sorted_list))
             scheduling.HRRN()
-            
             
             del scheduling
             
@@ -766,11 +777,13 @@ def prog_exec():
             print('exception: Unknown mode= ', mode)
             
         if mode >= 1 and mode <= 6:
-            writefile(scheduling_type)
+            print('start to write file')
+            writefile(scheduling_type, in_file_name)
+            print('successed!')
             output_log.clear()
         
         # do prog again until user input a q or Q
-        mode, time_slice, input_list = readfile()
+        mode, time_slice, input_list, in_file_name = readfile()
         
     # end while
 
