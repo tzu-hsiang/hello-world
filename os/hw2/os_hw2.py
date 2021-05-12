@@ -616,10 +616,12 @@ def readfile():
                                 else: # first line (len == 2)
                                     mode = int(line_tmp[0])
                                     time_slice = int(line_tmp[1])
+                            # end if
                         # end if
-                    # end if                
+                    # end if
+                # end for
                 break
-            # end for
+            # end with open
         except:
             if input_name == 'q' or input_name == 'Q':
                 return 0, 0, None, ''
@@ -795,6 +797,4 @@ if __name__ == '__main__':
     
 # end main
     
-    
-
     
